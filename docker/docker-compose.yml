@@ -4,18 +4,22 @@ version: '2.2'
 
 services:
   cat:
-    image: rolesle/cat:0.0.1
+    #image: rolesle/cat:0.0.1
+    image: sizeof1234/cat:20201026
     container_name: cat
-
     ######## build from Dockerfile ###########
     # build:
     #  context: ../
     #  dockerfile: ./docker/Dockerfile
     ######## End -> build from Dockerfile ###########
 
+    networks:
+      - cat
+
+
     environment:
       # if you have your own mysql, config it here, and disable the 'mysql' config blow
-      - MYSQL_URL=cat-mysql # links will maintain /etc/hosts, just use 'container_name'
+      - MYSQL_URL=mysqlas # links will maintain /etc/hosts, just use 'container_name'
       - MYSQL_PORT=3306
       - MYSQL_USERNAME=root
       - MYSQL_PASSWD=
@@ -29,20 +33,21 @@ services:
       # 默认使用环境变量设置。可以启用本注解，并修改为自己的配置
 #      - "./datasources.xml:/data/appdatas/cat/datasources.xml"
     command: /bin/sh -c 'chmod +x /datasources.sh && /datasources.sh && catalina.sh run'
-    links:
-      - mysql
     depends_on:
       - mysql
     ports:
       - "8080:8080"
       - "2280:2280"
-    network_mode: "host"
 
   # disable this if you have your own mysql
   mysql:
     container_name: cat-mysql
     image: mysql:5.7.22
     # expose 33306 to client (navicat)
+    networks:
+      cat:
+        aliases:
+          - mysqlas
     ports:
        - 33306:3306
     volumes:
@@ -58,3 +63,6 @@ services:
       MYSQL_DATABASE: "cat"
       MYSQL_USER: "root"
       MYSQL_PASSWORD: ""
+
+networks:
+  cat:
